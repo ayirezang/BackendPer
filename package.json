@@ -1,0 +1,17 @@
+{
+  "name": "BackendPer",
+  "version": "1.0.0",
+  "description": "http-server",
+  "main": "index.js",
+  "author": "pat",
+  "license": "MIT",
+  "scripts": {
+    "start": "nodemon ."
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
