@@ -6,31 +6,23 @@
 const bodyParser = require("body-parser");
 const express = require("express");
 const mongoose = require("mongoose");
+const accountRoutes = require("./routes/account");
+const bankRoutes = require("./routes/bank");
 
-const {
-  createBankController,
-  listBankController,
-  updateBankController,
-  deleteBankController,
-} = require("./BankController");
+const { body } = require("express-validator");
+
 //create server instance
 const server = express();
 
 //middleware
 server.use(bodyParser.json());
+server.use(accountRoutes);
+server.use(bankRoutes);
 
 //routes
 
 //view bank
-server.get("/bank", listBankController);
-server.get("/bank/:id", listBankController);
 
-//create
-server.post("/bank", createBankController);
-//update
-server.put("/bank", updateBankController);
-//delete
-server.delete("/bank", deleteBankController);
 //request handlers/controllers
 //connect database to and start the srver 2 parameters
 //  1 url (connects to the cloud infrastructure) 2 url(dataabase we want to conec tnto )

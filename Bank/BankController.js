@@ -1,79 +1,5 @@
-let BankModel = require("./BankModel");
-
-// controllers
-function listBankController(req, res) {
-  //view bank
-  const { id } = req.params; //req.params gives you access to dynamic parts
-  //  of the URLan object that contains parameters from the URL in Express.js routes
-  if (id) {
-    // const bank = BankModel.all();
-    BankModel.find({ _id: id })
-      .then((bank) => {
-        res.json({ data: bank });
-      })
-      .catch((err) => console.log(err));
-  } else {
-    BankModel.find()
-      .then((bank) => {
-        res.json({ data: bank });
-      })
-      .catch((err) => console.log(err));
-  }
-}
-
-const createBankController = (req, res) => {
-  //create bank
-  const { name, location, branch, phone, address, accountNumber } = req.body;
-  const bank = new BankModel({
-    name,
-    location,
-    branch,
-    phone,
-    address,
-    accountNumber,
-  });
-  //execute a query on the bank's model save ()internal method defined by mongoose it returns a promise
-  bank
-    .save() // Creates a new document in the banks collection
-    .then((result) => {
-      res.json({ message: "created successful", data: bank });
-    })
-    .catch((error) => console.log(error));
-};
-const updateBankController = (req, res) => {
-  const { id, name, location, branch, phone, address, accountNumber } =
-    req.body;
-
-  BankModel.findById(id)
-    .then((bank) => {
-      if (bank) {
-        bank.name = name;
-        bank.location = location;
-        bank.branch = branch;
-        bank.phone = phone;
-        bank.address = address;
-        bank.accountNumber = accountNumber;
-
-        bank
-          .save()
-          .then((updatedBank) => {
-            res
-              .status(200)
-              .json({ message: "updated successful", data: updatedBank });
-          })
-          .catch((err) => {
-            console.log(err);
-            res.status(500).json({ error: "Error saving updated bank" });
-          });
-      } else {
-        res.status(404).json({ error: "Bank not found" });
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json({ error: "Error finding bank" });
-    });
-};
+let BankModel = require("./models/Bank");
+const { validationResult } = require("express-validator");
 
 //
 // const deleteBankController = (req, res) => {
@@ -94,7 +20,21 @@ const deleteBankController = async (req, res) => {
     const deletedBank = await BankModel.findByIdAndDelete(id);
 
     if (deletedBank) {
-      return res.json({ message: "bank deleted", data: deletedBank });
+      try {
+        //find every account asscioted and delete it method deletemany
+        const deletedResult = awaitAccountModel.deleteMany({
+          bankId: deletedBank._id,
+        });
+        console.log(" account deletedResult:", deletedResult);
+        return res.json({ message: "bank deleted", data: deletedBank });
+      } catch (error) {
+        console.error("Error deleting accounts:", deleteError);
+        return res.json({
+          message: "bank deleted but failed to delete some associated accounts",
+          data: deletedBank,
+          accountDeletionError: deleteError.message,
+        });
+      }
     } else {
       return res.status(404).json({ message: "Bank not found" });
     }
@@ -105,9 +45,33 @@ const deleteBankController = async (req, res) => {
   }
 };
 
+//create account
+const createAccountController = async (req, res) => {
+  try {
+    const { name, number, accountType, bankId } = req.body;
+    const account = new AccountModel({ name, number, accountType, bankId });
+    const savedAccount = await account.save();
+    res.json({ message: "account created", data: savedAccount });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Failed to save" });
+  }
+};
+//fetch account
+const listAccountController = async () => {
+  try {
+    const bank = await BankModel.find().populate("accountId");
+    res.json({ message: "account fetched", data: bank });
+  } catch (error) {
+    res.status(500).json({ error: "Failed" });
+  }
+};
+
 module.exports = {
   createBankController,
   updateBankController,
   listBankController,
   deleteBankController,
+  createAccountController,
+  listAccountController,
 };
