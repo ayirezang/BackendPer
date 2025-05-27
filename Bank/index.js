@@ -8,6 +8,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const accountRoutes = require("./routes/account");
 const bankRoutes = require("./routes/bank");
+const userRoutes = require("./routes/user");
+require("dotenv").config();
 
 const { body } = require("express-validator");
 
@@ -18,6 +20,7 @@ const server = express();
 server.use(bodyParser.json());
 server.use(accountRoutes);
 server.use(bankRoutes);
+server.use(userRoutes);
 
 //routes
 
@@ -28,9 +31,7 @@ server.use(bankRoutes);
 //  1 url (connects to the cloud infrastructure) 2 url(dataabase we want to conec tnto )
 //method to connect
 mongoose
-  .connect(
-    "mongodb+srv://bankUser:amour@cluster0.9opkdne.mongodb.net/bankUser?retryWrites=true&w=majority&appName=Cluster0"
-  )
+  .connect(process.env.MONGO_DB)
   .then((result) => {
     server.listen(3000, () => console.log("server is here"));
   })

@@ -28,10 +28,15 @@ function listBankController(req, res) {
 
 const createBankController = (req, res) => {
   //validation checks
-  const error = validationResult(req);
-  if (!error.isEmpty()) {
-    console.log(error);
-    return res.json({ message: error.array()[0].msg });
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors.array());
+
+    return res.status(400).json({
+      status: "error",
+      message: "Validation failed",
+      errors: errors.array(),
+    });
   }
 
   //create bank
