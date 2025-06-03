@@ -52,7 +52,10 @@ const signUp = async (req, res) => {
               res.status(201).json({
                 message: "user created successfully",
                 token,
-                user,
+                user: {
+                  Username: Username,
+                  email: user.email,
+                },
               });
             })
             .catch((err) => {
@@ -104,10 +107,16 @@ const signIn = async (req, res) => {
     });
 
     //return user data on successful signin
-    return res.status(200).json({ message: "login successful", token, user });
+    return res.status(200).json({
+      message: "login successful",
+      token,
+      user: {
+        email: user.email,
+      },
+    });
   } catch (error) {
     console.error("error signing in:", error);
-    res.status.json({ message: "internal server error" });
+    res.status(500).json({ message: "internal server error" });
   }
 };
 

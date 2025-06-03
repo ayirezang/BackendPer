@@ -1,35 +1,66 @@
+// const jwt = require("jsonwebtoken");
+// require("dotenv").config();
+
+// const Authorization = (req, res, next) => {
+//   try {
+//     // extract authorization  from the  header
+//     const authorizationHeader = req.get("Authorization");
+//     if (!authorizationHeader) {
+//       return res.json({ message: "unauthorized" });
+//     }
+//     //extract the token from header
+//     const token = authorizationHeader.split(" ")[1];
+//     if (!token) {
+//       return res.json({ message: "unathorized,token format is invalid" });
+//     }
+
+//     //verify token with secretkey
+//     const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+//     if (!decodedToken) {
+//       return res.status(401).json({ message: "unauthorized,token invalid" });
+//     }
+//     // attach user without password to req
+
+//     next();
+//   } catch (error) {
+//     console.log(error.message);
+//     return res.status(401).json({ message: "unauthorized, token invalid" });
+//   }
+// };
+
+// module.exports = Authorization;
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const Authorization = (req, res, next) => {
   try {
-    // extract authorization  from the  header
+    // Extract authorization from the header
     const authorizationHeader = req.get("Authorization");
     if (!authorizationHeader) {
-      return res.json({ message: "unauthorized" });
+      return res
+        .status(401)
+        .json({ message: "unauthorized no token provided" });
     }
-    //extract the token from header
+
+    // Extract the token from header (expecting "Bearer <token>" format)
     const token = authorizationHeader.split(" ")[1];
     if (!token) {
-      return res.json({ message: "unathorized,token format is invalid" });
+      return res
+        .status(401)
+        .json({ message: "unauthorized - token format is invalid" });
     }
 
-    //verify token with secretkey
+    // Verify token with secret key
     const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
-    if (!decodedToken) {
-      return res.status(401).json({ message: "unauthorized,token invalid" });
-    }
-    const user = userModel.findById(decodedToken.id).select("-password");
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
 
-    req.user = user; // attach user without password to req
-    next();
+    // Attach user ID to request object for use in subsequent middleware/routes
+    req.userId = decodedToken.id;
+
+    // Token is valid, continue to next middleware/route
     next();
   } catch (error) {
-    console.log(error.message);
-    return res.status(401).json({ message: "unauthorized, token invalid" });
+    console.log("JWT Error:", error.message);
+    return res.status(401).json({ message: "unauthorized - token invalid" });
   }
 };
 
